@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#173f35" />
+  <title>WordRack Classic</title>
+  <style>
+    :root{
+      --bg:#efe7d4; --panel:#fffaf0; --ink:#1f2a25; --muted:#6c756f;
+      --green:#173f35; --green2:#235d4e; --gold:#d5ad55; --tile:#f4dfae;
+      --tile-edge:#c79c52; --board:#6d8e79; --line:#486657;
+      --dw:#efb1b4; --tw:#df737c; --dl:#a9d8e8; --tl:#4e94b5; --center:#e6b8ba;
+      --danger:#a43f47; --ok:#2d765a; --shadow:0 12px 30px rgba(32,39,35,.12);
+    }
+    *{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:ui-rounded,-apple-system,BlinkMacSystemFont,"SF Pro Rounded","Segoe UI",sans-serif}
+    button,input,select{font:inherit} button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .app{max-width:1180px;margin:0 auto;padding:env(safe-area-inset-top) 12px calc(16px + env(safe-area-inset-bottom))}
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px 2px 8px;gap:10px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.2px}.brand-mark{width:34px;height:34px;border-radius:8px;background:var(--green);color:#fff;display:grid;place-items:center;box-shadow:var(--shadow)}
+    .brand-mark::after{content:"W";font-size:20px}.small{font-size:12px;color:var(--muted)}
+    .pill{border:1px solid rgba(23,63,53,.15);background:#fff8;border-radius:999px;padding:7px 10px;font-size:12px}
+    .screen{display:none}.screen.active{display:block}.card{background:var(--panel);border:1px solid rgba(23,63,53,.12);border-radius:18px;box-shadow:var(--shadow);padding:16px}
+    .hero{padding:28px 18px 20px;text-align:center}.hero h1{margin:0;font-size:clamp(30px,9vw,54px);line-height:.95;color:var(--green)}.hero p{max-width:620px;margin:14px auto 0;color:var(--muted);line-height:1.45}
+    .home-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}.section-title{font-weight:900;font-size:18px;margin:0 0 12px;color:var(--green)}
+    label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}.field{width:100%;border:1px solid #cfc7b5;border-radius:12px;padding:13px 14px;background:#fff;color:var(--ink);outline:none}.field:focus{border-color:var(--green2);box-shadow:0 0 0 3px rgba(35,93,78,.1)}
+    .row{display:flex;gap:10px;align-items:center}.row>*{flex:1}.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:900;background:var(--green);color:#fff;min-height:46px}.btn.secondary{background:#eee7d8;color:var(--ink)}.btn.danger{background:var(--danger)}.btn.gold{background:var(--gold);color:#2c2a20}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.smallbtn{min-height:38px;padding:9px 11px;font-size:13px}
+    .divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:16px 0}.divider::before,.divider::after{content:"";height:1px;background:#d9d0bf;flex:1}
+    .notice{background:#f4efdf;border-radius:12px;padding:11px 12px;font-size:12px;line-height:1.45;color:#5b625e;margin-top:12px}.notice strong{color:var(--ink)}
+    .lobby-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.room-code{font-size:28px;font-weight:1000;letter-spacing:4px;color:var(--green)}
+    .players{display:grid;gap:9px}.player-row{display:flex;align-items:center;justify-content:space-between;background:#f5efdf;border-radius:12px;padding:12px}.player-left{display:flex;align-items:center;gap:9px}.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:#fff;font-weight:900}.host-tag{font-size:10px;background:var(--gold);padding:3px 6px;border-radius:999px;font-weight:900}
+    .game-layout{display:grid;grid-template-columns:1fr;gap:12px}.topbar{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none}.topbar::-webkit-scrollbar{display:none}.score-card{min-width:116px;background:var(--panel);border:2px solid transparent;border-radius:14px;padding:9px 10px;box-shadow:0 6px 16px rgba(32,39,35,.08)}.score-card.turn{border-color:var(--gold);transform:translateY(-1px)}.score-name{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.score-num{font-size:24px;font-weight:1000;color:var(--green)}
+    .game-main{min-width:0}.board-wrap{background:#355849;border-radius:16px;padding:7px;box-shadow:var(--shadow);overflow:auto;-webkit-overflow-scrolling:touch}.board{display:grid;grid-template-columns:repeat(15,1fr);width:min(100%,760px);min-width:570px;aspect-ratio:1;margin:auto;border:1px solid var(--line);background:var(--board);user-select:none;touch-action:manipulation}.cell{position:relative;display:grid;place-items:center;border-right:1px solid rgba(32,62,47,.48);border-bottom:1px solid rgba(32,62,47,.48);font-size:9px;text-align:center;font-weight:900;color:#28463b;line-height:1.0;padding:1px}.cell.dw{background:var(--dw)}.cell.tw{background:var(--tw);color:#fff}.cell.dl{background:var(--dl)}.cell.tl{background:var(--tl);color:#fff}.cell.center{background:var(--center);font-size:18px;color:#6e363c}.cell.pending{outline:3px solid var(--gold);outline-offset:-3px;z-index:2}
+    .tile{width:88%;height:88%;border-radius:7px;background:linear-gradient(#f9e9be,#edd39a);border:1px solid var(--tile-edge);box-shadow:0 2px 0 #aa7d36,0 3px 7px rgba(0,0,0,.18);display:grid;place-items:center;position:relative;color:#2e2b24;font-weight:1000;font-size:clamp(14px,2.7vw,27px)}.tile .val{position:absolute;right:5%;bottom:3%;font-size:.38em;font-weight:900}.tile.blank::after{content:"★";position:absolute;left:6%;top:4%;font-size:.3em;color:#8a6f3c}.tile.selected{outline:4px solid var(--green2);transform:translateY(-4px)}.tile.exchange-selected{outline:4px solid var(--danger);transform:translateY(-4px)}
+    .rack-panel{margin-top:10px;background:#8b5c31;padding:8px;border-radius:14px;box-shadow:inset 0 -5px 0 #68401f}.rack{display:flex;justify-content:center;gap:5px;min-height:61px}.rack .tile{width:min(12.7vw,58px);height:min(12.7vw,58px);flex:0 0 auto;font-size:min(6.2vw,27px)}
+    .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.controls .btn{padding:10px 7px;font-size:13px}.turn-line{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 2px 8px}.turn-text{font-weight:1000;color:var(--green)}.timer{font-variant-numeric:tabular-nums;font-weight:1000;background:#fff7e5;border-radius:999px;padding:7px 10px;min-width:70px;text-align:center}.timer.low{background:#f7d7d9;color:#8f3039}
+    .side{display:grid;gap:12px}.history{max-height:310px;overflow:auto}.history-item{border-bottom:1px solid #e7dfcf;padding:8px 0;font-size:12px;line-height:1.35}.history-item:last-child{border-bottom:0}.history-item strong{color:var(--green)}
+    .bagline{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px}.challenge-box{background:#fff0d1;border:1px solid #e0bd70;border-radius:12px;padding:11px;font-size:12px;margin:9px 0}.challenge-words{font-weight:1000;font-size:16px;letter-spacing:.5px;margin:6px 0}
+    dialog{border:0;border-radius:18px;max-width:520px;width:calc(100% - 24px);padding:0;box-shadow:0 25px 80px rgba(0,0,0,.3)}dialog::backdrop{background:rgba(15,31,25,.58)}.modal{padding:18px}.modal h2{margin:0 0 8px;color:var(--green)}.modal p,.modal li{font-size:13px;line-height:1.45}.modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.modal-actions .btn{flex:1;min-width:130px}
+    .toast{position:fixed;z-index:50;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#162d25;color:white;padding:10px 14px;border-radius:999px;font-weight:800;font-size:13px;opacity:0;pointer-events:none;transition:.2s;max-width:90vw;text-align:center}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .setup-error{background:#ffe7e5;border:1px solid #e5aaa6;color:#7b312f;border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.45;display:none}.setup-error.show{display:block}
+    .winner{background:#f3e3ae;border-radius:16px;padding:16px;text-align:center;margin-bottom:12px}.winner h2{margin:0;color:var(--green)}
+    @media(min-width:760px){.home-grid{grid-template-columns:1fr 1fr}.game-layout{grid-template-columns:minmax(0,1fr) 300px}.side{align-content:start;position:sticky;top:8px}.board{min-width:0}.controls{grid-template-columns:repeat(6,1fr)}}
+    @media(max-width:430px){.app{padding-left:8px;padding-right:8px}.card{padding:13px}.board{min-width:540px}.rack .tile{width:12.4vw;height:12.4vw}.controls{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><div class="brand-mark"></div><div>WordRack Classic<div class="small">private multiplayer word board</div></div></div>
+    <div id="netPill" class="pill">Connecting…</div>
+  </header>
+
+  <div id="setupError" class="setup-error"></div>
+
+  <section id="homeScreen" class="screen active">
+    <div class="card hero">
+      <h1>Classic word-board play,<br>without the clutter.</h1>
+      <p>A private 2–4 player game with the familiar 15×15 premium-square layout, seven-tile racks, classic English tile values, optional turn timer, challenges, scoring and endgame.</p>
+    </div>
+    <div class="home-grid">
+      <div class="card">
+        <h2 class="section-title">Create a room</h2>
+        <label for="createName">Your nickname</label>
+        <input id="createName" class="field" maxlength="18" placeholder="e.g. Sam" autocomplete="nickname" />
+        <div class="row">
+          <div><label for="playerCount">Players</label><select id="playerCount" class="field"><option value="2">2 players</option><option value="3">3 players</option><option value="4">4 players</option></select></div>
+          <div><label for="timerSelect">Turn timer</label><select id="timerSelect" class="field"><option value="0">Off</option><option value="60">60 sec</option><option value="90">90 sec</option><option value="120">2 min</option><option value="180">3 min</option><option value="300">5 min</option></select></div>
+        </div>
+        <button id="createBtn" class="btn" style="width:100%;margin-top:14px">Create room</button>
+      </div>
+      <div class="card">
+        <h2 class="section-title">Join friends</h2>
+        <label for="joinName">Your nickname</label>
+        <input id="joinName" class="field" maxlength="18" placeholder="e.g. Priya" autocomplete="nickname" />
+        <label for="roomInput">Room code</label>
+        <input id="roomInput" class="field" maxlength="6" placeholder="ABC123" autocapitalize="characters" />
+        <button id="joinBtn" class="btn secondary" style="width:100%;margin-top:14px">Join room</button>
+        <div class="notice"><strong>Dictionary:</strong> plays use manual Collins challenge adjudication. The complete official word list is not embedded in this public webpage.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="lobbyScreen" class="screen">
+    <div class="card">
+      <div class="lobby-head"><div><div class="small">ROOM CODE</div><div id="lobbyCode" class="room-code">------</div></div><button id="shareBtn" class="btn gold smallbtn">Share invite</button></div>
+      <div id="lobbyMeta" class="notice"></div>
+      <h2 class="section-title" style="margin-top:16px">Players</h2>
+      <div id="lobbyPlayers" class="players"></div>
+      <div class="row" style="margin-top:14px"><button id="leaveBtn" class="btn secondary">Leave</button><button id="startBtn" class="btn">Start game</button></div>
+    </div>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div id="scoreBar" class="topbar"></div>
+    <div class="game-layout">
+      <main class="game-main">
+        <div class="turn-line"><div id="turnText" class="turn-text">Waiting…</div><div id="timer" class="timer">—</div></div>
+        <div id="challengeNotice"></div>
+        <div class="board-wrap"><div id="board" class="board" aria-label="15 by 15 word board"></div></div>
+        <div class="rack-panel"><div id="rack" class="rack"></div></div>
+        <div class="bagline"><span id="bagCount">Bag: —</span><span id="moveHint">Tap a tile, then a square</span></div>
+        <div class="controls">
+          <button id="submitBtn" class="btn">Play</button>
+          <button id="recallBtn" class="btn secondary">Recall</button>
+          <button id="shuffleBtn" class="btn secondary">Shuffle</button>
+          <button id="passBtn" class="btn secondary">Pass</button>
+          <button id="exchangeBtn" class="btn secondary">Exchange</button>
+          <button id="challengeBtn" class="btn gold">Challenge</button>
+        </div>
+      </main>
+      <aside class="side">
+        <div class="card"><h3 class="section-title">Move history</h3><div id="history" class="history"></div></div>
+        <div class="card"><h3 class="section-title">Game</h3><button id="rulesBtn" class="btn secondary" style="width:100%">Rules & dictionary</button><button id="copyCodeBtn" class="btn secondary" style="width:100%;margin-top:8px">Copy room link</button></div>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<dialog id="rulesDialog"><div class="modal"><h2>Rules & dictionary</h2><p>This game follows the classic English 15×15 word-board format: 100 tiles, seven-tile racks, standard letter values, premium squares, 50-point bonus for using all seven rack tiles, exchanges only while at least seven tiles remain in the bag, and standard rack-value endgame deductions.</p><p><strong>Dictionary adjudication:</strong> this page does not contain the Collins word list. When a play is challenged, use Collins’ official online Scrabble checker. In this build an unsuccessful challenge adds 5 points per challenged word to the player whose move was challenged; a successful challenge removes the move and the challenged player loses that turn.</p><p><strong>Casual-use note:</strong> the game state is stored in your Firebase Realtime Database. It is designed for private games among friends, not cheat-resistant tournament play.</p><div class="modal-actions"><button id="openCheckerBtn" class="btn gold">Open Collins checker</button><button class="btn secondary" onclick="document.getElementById('rulesDialog').close()">Close</button></div></div></dialog>
+
+<dialog id="blankDialog"><div class="modal"><h2>Choose blank letter</h2><p>A blank scores 0 points but represents the letter you choose.</p><div id="blankLetters" style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px"></div><div class="modal-actions"><button id="blankCancel" class="btn secondary">Cancel</button></div></div></dialog>
+
+<dialog id="challengeDialog"><div class="modal"><h2>Resolve challenge</h2><p>Check every challenged word in Collins’ official checker, then return here.</p><div id="challengeWords" class="challenge-words"></div><div class="modal-actions"><button id="copyWordsBtn" class="btn secondary">Copy words</button><button id="challengeCheckerBtn" class="btn gold">Open Collins</button></div><div class="modal-actions"><button id="validBtn" class="btn">All words valid</button><button id="invalidBtn" class="btn danger">At least one invalid</button></div><p class="small">Only the player who issued the challenge can resolve it.</p></div></dialog>
+
+<dialog id="endDialog"><div class="modal"><div id="endWinner" class="winner"></div><div id="finalScores"></div><div class="modal-actions"><button id="rematchBtn" class="btn gold">Rematch</button><button id="newRoomBtn" class="btn">New room</button><button id="endCloseBtn" class="btn secondary">View board</button></div></div></dialog>
+
+<div id="toast" class="toast"></div>
+
+<script type="module">
+  /* ============================================================
+     1) FIREBASE SETUP
+     Replace ONLY the object below with the firebaseConfig object
+     shown in Firebase Console -> Project settings -> Your apps.
+     Keep the property names exactly as Firebase gives them.
+  ============================================================ */
+  const firebaseConfig = {
+    apiKey: "AIzaSyAUYK3s8cPeAYF5NSyl3JsCiUot3if1fvE",
+    authDomain: "wordgamefirebasr.firebaseapp.com",
+    databaseURL: "https://wordgamefirebasr-default-rtdb.firebaseio.com",
+    projectId: "wordgamefirebasr",
+    storageBucket: "wordgamefirebasr.firebasestorage.app",
+    messagingSenderId: "408164528670",
+    appId: "1:408164528670:web:1f5d423be1813bffe8f40f"
+  };
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+  import { getDatabase, ref, onValue, get, set, update, runTransaction, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+  const $ = (id) => document.getElementById(id);
+  const screens = ["homeScreen","lobbyScreen","gameScreen"];
+  const show = (id) => screens.forEach(s => $(s).classList.toggle("active", s===id));
+  const escapeHtml = s => String(s??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+  const cleanName = s => String(s||"").trim().replace(/\s+/g," ").slice(0,18);
+  const cleanCode = s => String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+  const clone = obj => JSON.parse(JSON.stringify(obj));
+  let toastTimer;
+  function toast(msg){ clearTimeout(toastTimer); $("toast").textContent=msg; $("toast").classList.add("show"); toastTimer=setTimeout(()=>$("toast").classList.remove("show"),2400); }
+
+  const COLLINS_CHECKER = "https://scrabble.collinsdictionary.com/check/";
+  const sdkConfigured = !Object.values(firebaseConfig).some(v => !v || String(v).includes("PASTE_YOURS_HERE"));
+  if(!sdkConfigured){
+    $("setupError").classList.add("show");
+    $("setupError").innerHTML = "<strong>One setup step remains:</strong> paste your Firebase web configuration into the <code>firebaseConfig</code> object inside this file. The exact iPhone steps are in the instructions that came with this file.";
+    $("netPill").textContent="Firebase not configured";
+  }
+
+  let app, auth, db, me=null, roomCode=null, room=null, roomUnsub=null, offsetUnsub=null;
+  let serverOffset=0, pending=new Map(), selectedTileId=null, rackOrder=[], exchangeMode=false, exchangeSelected=new Set(), blankPending=null;
+  let timerInterval=null, lastAutoPassTurn=-1, challengeDialogMoveId=null;
+
+  const LETTERS = {
+    A:[9,1],B:[2,3],C:[2,3],D:[4,2],E:[12,1],F:[2,4],G:[3,2],H:[2,4],I:[9,1],J:[1,8],K:[1,5],L:[4,1],M:[2,3],N:[6,1],O:[8,1],P:[2,3],Q:[1,10],R:[6,1],S:[4,1],T:[6,1],U:[4,1],V:[2,4],W:[2,4],X:[1,8],Y:[2,4],Z:[1,10],"?":[2,0]
+  };
+
+  const TW = new Set([0,7,14,105,119,210,217,224]);
+  const DW = new Set([16,28,32,42,48,56,64,70,112,154,160,168,176,182,192,196,208]);
+  const TL = new Set([20,24,76,80,84,88,136,140,144,148,200,204]);
+  const DL = new Set([3,11,36,38,45,52,59,92,96,98,102,108,116,122,126,128,132,165,172,179,186,188,213,221]);
+  const CENTER=112;
+  const premiumAt = idx => TW.has(idx)?"TW":DW.has(idx)?"DW":TL.has(idx)?"TL":DL.has(idx)?"DL":idx===CENTER?"DW":null;
+
+  function makeBag(){
+    const bag=[]; let n=0;
+    for(const [letter,[count,value]] of Object.entries(LETTERS)){
+      for(let i=0;i<count;i++) bag.push({id:`t${n++}_${Math.random().toString(36).slice(2,7)}`,letter,value,blank:letter==="?"});
+    }
+    for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]];}
+    return bag;
+  }
+  function drawTiles(bag,count){ const drawn=[]; while(count-->0 && bag.length) drawn.push(bag.shift()); return drawn; }
+  function tilePoints(t){ return Number(t?.value||0); }
+  function rackValue(rack){ return (rack||[]).reduce((s,t)=>s+tilePoints(t),0); }
+  function idxRC(idx){return [Math.floor(idx/15),idx%15]}
+  function rcIdx(r,c){return r*15+c}
+  function boardTile(board,idx){ return (board && board[idx]!=null) ? board[idx] : null; }
+  function boardHasTiles(board){ return board && Object.keys(board).length>0; }
+  function occupied(board,pmap,idx){ return pmap.has(idx) ? pmap.get(idx) : boardTile(board,idx); }
+
+  function wordAt(board,pmap,idx,dr,dc){
+    let [r,c]=idxRC(idx), sr=r, sc=c;
+    while(sr-dr>=0 && sr-dr<15 && sc-dc>=0 && sc-dc<15 && occupied(board,pmap,rcIdx(sr-dr,sc-dc))) {sr-=dr;sc-=dc;}
+    const cells=[]; let rr=sr,cc=sc;
+    while(rr>=0&&rr<15&&cc>=0&&cc<15){ const i=rcIdx(rr,cc), t=occupied(board,pmap,i); if(!t) break; cells.push(i); rr+=dr;cc+=dc; }
+    return cells;
+  }
+
+  function scoreWord(board,pmap,cells){
+    let sum=0, mult=1;
+    for(const idx of cells){
+      const t=occupied(board,pmap,idx); let v=tilePoints(t);
+      if(pmap.has(idx)){
+        const p=premiumAt(idx); if(p==="DL")v*=2; if(p==="TL")v*=3; if(p==="DW")mult*=2; if(p==="TW")mult*=3;
+      }
+      sum+=v;
+    }
+    return sum*mult;
+  }
+
+  function calculateMove(board,pmap){
+    const placed=[...pmap.keys()].map(Number).sort((a,b)=>a-b);
+    if(!placed.length) return {ok:false,error:"Place at least one tile."};
+    const rows=new Set(placed.map(i=>idxRC(i)[0])), cols=new Set(placed.map(i=>idxRC(i)[1]));
+    if(rows.size>1 && cols.size>1) return {ok:false,error:"All new tiles must be in one row or one column."};
+    if(placed.length>1){
+      if(rows.size===1){ const r=[...rows][0], cs=placed.map(i=>idxRC(i)[1]); for(let c=Math.min(...cs);c<=Math.max(...cs);c++) if(!occupied(board,pmap,rcIdx(r,c))) return {ok:false,error:"Your word cannot contain a gap."}; }
+      else { const c=[...cols][0], rs=placed.map(i=>idxRC(i)[0]); for(let r=Math.min(...rs);r<=Math.max(...rs);r++) if(!occupied(board,pmap,rcIdx(r,c))) return {ok:false,error:"Your word cannot contain a gap."}; }
+    }
+    if(!boardHasTiles(board)){
+      if(!pmap.has(CENTER)) return {ok:false,error:"The opening play must cover the center star."};
+    } else {
+      let touches=false;
+      for(const idx of placed){ const [r,c]=idxRC(idx); for(const [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]){const rr=r+dr,cc=c+dc;if(rr>=0&&rr<15&&cc>=0&&cc<15&&boardTile(board,rcIdx(rr,cc))) touches=true;} }
+      if(!touches) return {ok:false,error:"Your play must connect to a tile already on the board."};
+    }
+    const seen=new Set(), words=[];
+    for(const idx of placed){
+      for(const [dr,dc] of [[0,1],[1,0]]){
+        const cells=wordAt(board,pmap,idx,dr,dc); if(cells.length<2) continue;
+        const key=cells.join(","); if(seen.has(key)) continue; seen.add(key);
+        const text=cells.map(i=>occupied(board,pmap,i).letter).join("");
+        words.push({text,cells,score:scoreWord(board,pmap,cells)});
+      }
+    }
+    if(!words.length) return {ok:false,error:"A play must form at least one word of 2 or more letters."};
+    let score=words.reduce((s,w)=>s+w.score,0); if(placed.length===7) score+=50;
+    return {ok:true,words,score,bingo:placed.length===7};
+  }
+
+  function nextPlayer(r, uid){ const order=r.order||[]; const i=Math.max(0,order.indexOf(uid)); return {index:(i+1)%order.length,uid:order[(i+1)%order.length]}; }
+  function serverNow(){ return Date.now()+serverOffset; }
+
+  function finishGame(r,outUid=null,reason="Game over"){
+    const players=r.players||{}; let bonus=0;
+    for(const uid of r.order||[]){ const v=rackValue(players[uid]?.rack||[]); players[uid].score=(players[uid].score||0)-v; if(outUid && uid!==outUid) bonus+=v; }
+    if(outUid) players[outUid].score=(players[outUid].score||0)+bonus;
+    r.status="ended"; r.endedAt=serverNow(); r.endReason=reason; r.pendingGameEnd=false; r.lastMove && (r.lastMove.challengeOpen=false);
+    const best=Math.max(...Object.values(players).map(p=>p.score||0)); r.winners=Object.entries(players).filter(([,p])=>(p.score||0)===best).map(([uid])=>uid);
+    return r;
+  }
+
+  function setupBoard(){
+    const b=$("board"); b.innerHTML="";
+    for(let idx=0;idx<225;idx++){
+      const d=document.createElement("button"); d.type="button"; d.className="cell"; d.dataset.idx=idx; d.setAttribute("aria-label",`Board square ${idx+1}`);
+      const p=premiumAt(idx); if(idx===CENTER){d.classList.add("center");d.textContent="★";} else if(p){d.classList.add(p.toLowerCase());d.textContent=p;}
+      d.addEventListener("click",()=>onCellTap(idx)); b.appendChild(d);
+    }
+  }
+  setupBoard();
+
+  function tileHtml(t,extra=""){
+    const letter=t.blank ? (t.letter==="?"?"_":t.letter) : t.letter;
+    return `<div class="tile ${t.blank?"blank":""} ${extra}" data-tile="${escapeHtml(t.id)}"><span>${escapeHtml(letter)}</span><span class="val">${t.value}</span></div>`;
+  }
+
+  function renderBoard(){
+    const board=room?.board||{};
+    for(let idx=0;idx<225;idx++){
+      const el=$("board").children[idx]; const p=premiumAt(idx); el.className="cell"; el.innerHTML="";
+      if(idx===CENTER){el.classList.add("center");el.textContent="★";} else if(p){el.classList.add(p.toLowerCase());el.textContent=p;}
+      const t=pending.get(idx)||boardTile(board,idx);
+      if(t){el.className="cell"+(pending.has(idx)?" pending":"");el.innerHTML=tileHtml(t);}
+    }
+  }
+
+  function myPlayer(){return me&&room?.players?.[me.uid]}
+  function isMyTurn(){return !!(room&&me&&room.status==="playing"&&room.turnUid===me.uid&&!room.challenge)}
+  function canAct(){return isMyTurn()&&!room.pendingGameEnd}
+
+  function syncRackOrder(){
+    const ids=(myPlayer()?.rack||[]).map(t=>t.id); rackOrder=rackOrder.filter(id=>ids.includes(id)); for(const id of ids) if(!rackOrder.includes(id)) rackOrder.push(id);
+  }
+  function renderRack(){
+    syncRackOrder(); const rack=myPlayer()?.rack||[], byId=Object.fromEntries(rack.map(t=>[t.id,t])); const used=new Set([...pending.values()].map(t=>t.id)); const el=$("rack"); el.innerHTML="";
+    for(const id of rackOrder){ const t=byId[id]; if(!t||used.has(id)) continue; const wrap=document.createElement("button"); wrap.type="button"; wrap.style.cssText="padding:0;border:0;background:transparent"; wrap.innerHTML=tileHtml(t,(selectedTileId===id?"selected ":"")+(exchangeSelected.has(id)?"exchange-selected":"")); wrap.addEventListener("click",()=>onRackTap(id)); el.appendChild(wrap); }
+  }
+
+  function renderScores(){
+    const bar=$("scoreBar"); bar.innerHTML=""; for(const uid of room?.order||[]){const p=room.players?.[uid]; if(!p)continue; const d=document.createElement("div");d.className="score-card "+(room.turnUid===uid&&room.status==="playing"?"turn":"");d.innerHTML=`<div class="score-name">${escapeHtml(p.name)}${uid===me?.uid?" · you":""}</div><div class="score-num">${p.score||0}</div>`;bar.appendChild(d);}
+  }
+
+  function renderHistory(){
+    const h=$("history"), arr=room?.history||[]; h.innerHTML=""; if(!arr.length){h.innerHTML='<div class="small">No moves yet.</div>';return;}
+    [...arr].reverse().forEach(x=>{const d=document.createElement("div");d.className="history-item";let text="";
+      if(x.kind==="play") text=`<strong>${escapeHtml(x.name)}</strong> played ${escapeHtml((x.words||[]).join(", "))} for <strong>${x.score}</strong>${x.bingo?" + bingo":""}${x.invalid?" · invalidated":""}`;
+      if(x.kind==="pass") text=`<strong>${escapeHtml(x.name)}</strong> passed`;
+      if(x.kind==="exchange") text=`<strong>${escapeHtml(x.name)}</strong> exchanged ${x.count} tile${x.count===1?"":"s"}`;
+      if(x.kind==="challenge") text=`<strong>${escapeHtml(x.name)}</strong> challenged: ${x.result}`;
+      d.innerHTML=text;h.appendChild(d);});
+  }
+
+  function renderChallengeNotice(){
+    const box=$("challengeNotice"); box.innerHTML="";
+    if(room?.challenge){ const ch=room.challenge; const name=room.players?.[ch.challengerUid]?.name||"A player"; box.innerHTML=`<div class="challenge-box"><strong>${escapeHtml(name)}</strong> challenged the previous play. Gameplay is paused while the words are checked.</div>`; return; }
+    if(room?.lastMove?.challengeOpen && room.lastMove.playerUid!==me?.uid){
+      const words=(room.lastMove.words||[]).join(", "); box.innerHTML=`<div class="challenge-box">Previous play: <span class="challenge-words">${escapeHtml(words)}</span> You may challenge it before the next completed action.</div>`;
+    }
+    if(room?.pendingGameEnd && room?.lastMove?.playerUid!==me?.uid){box.innerHTML+=`<div class="challenge-box"><strong>Game-ending play.</strong> Challenge it now, or accept it to finish the game. <button id="acceptEndBtn" class="btn smallbtn" style="margin-top:8px">Accept move & finish</button></div>`; setTimeout(()=>$("acceptEndBtn")?.addEventListener("click",acceptEndingMove),0);}
+  }
+
+  function renderGame(){
+    renderScores(); renderBoard(); renderRack(); renderHistory(); renderChallengeNotice();
+    const tp=room.players?.[room.turnUid]; $("turnText").textContent=room.status==="ended"?"Game finished":room.challenge?"Challenge in progress":room.pendingGameEnd?"Awaiting final challenge/acceptance":(room.turnUid===me?.uid?"Your turn":`${tp?.name||"Player"}'s turn`);
+    $("bagCount").textContent=`Bag: ${(room.bag||[]).length} tile${(room.bag||[]).length===1?"":"s"}`;
+    const active=canAct(); $("submitBtn").disabled=!active||pending.size===0; $("recallBtn").disabled=pending.size===0; $("passBtn").disabled=!active; $("exchangeBtn").disabled=!active || (room.bag||[]).length<7; $("shuffleBtn").disabled=!(myPlayer()?.rack||[]).length;
+    const canChallenge=room.status==="playing"&&room.lastMove?.challengeOpen&&room.lastMove.playerUid!==me?.uid&&!room.challenge; $("challengeBtn").disabled=!canChallenge;
+    if(exchangeMode){$("exchangeBtn").textContent=exchangeSelected.size?`Confirm (${exchangeSelected.size})`:"Pick tiles";$("moveHint").textContent="Tap rack tiles to mark them for exchange";} else {$("exchangeBtn").textContent="Exchange";$("moveHint").textContent=selectedTileId?"Now tap a board square":"Tap a tile, then a square";}
+    updateTimer();
+  }
+
+  function renderLobby(){
+    $("lobbyCode").textContent=roomCode; const count=Object.keys(room.players||{}).length; $("lobbyMeta").innerHTML=`Room for <strong>${room.maxPlayers}</strong> players · ${room.timerSeconds?`${room.timerSeconds}s turn timer`:"timer off"} · ${count}/${room.maxPlayers} joined`;
+    const list=$("lobbyPlayers");list.innerHTML="";(room.order||[]).forEach(uid=>{const p=room.players?.[uid];if(!p)return;const d=document.createElement("div");d.className="player-row";d.innerHTML=`<div class="player-left"><div class="avatar">${escapeHtml(p.name.slice(0,1).toUpperCase())}</div><div><strong>${escapeHtml(p.name)}</strong>${uid===me?.uid?' <span class="small">(you)</span>':''}</div></div>${uid===room.hostUid?'<span class="host-tag">HOST</span>':''}`;list.appendChild(d);});
+    const host=room.hostUid===me?.uid; $("startBtn").style.display=host?"block":"none"; $("startBtn").disabled=count!==room.maxPlayers; $("startBtn").textContent=count===room.maxPlayers?"Start game":`Waiting for ${room.maxPlayers-count}`;
+  }
+
+  function renderEnd(){
+    if(room.status!=="ended") return; const winners=(room.winners||[]).map(uid=>room.players?.[uid]?.name).filter(Boolean); $("endWinner").innerHTML=`<h2>${winners.length>1?"Tie game":`${escapeHtml(winners[0]||"Winner")} wins!`}</h2><div class="small" style="margin-top:6px">${escapeHtml(room.endReason||"Game over")}</div>`;
+    const rows=(room.order||[]).map(uid=>({name:room.players?.[uid]?.name||"Player",score:room.players?.[uid]?.score||0})).sort((a,b)=>b.score-a.score); $("finalScores").innerHTML=rows.map((x,i)=>`<div class="player-row"><strong>${i+1}. ${escapeHtml(x.name)}</strong><strong>${x.score}</strong></div>`).join(""); $("rematchBtn").style.display=room.hostUid===me?.uid?"block":"none"; if(!$("endDialog").open) $("endDialog").showModal();
+  }
+
+  function updateTimer(){
+    const el=$("timer"); if(!room||room.status!=="playing"||!room.timerSeconds||room.challenge||room.pendingGameEnd){el.textContent=room?.timerSeconds?"Paused":"—";el.classList.remove("low");return;}
+    const left=Math.max(0,Math.ceil((room.turnStartedAt+room.timerSeconds*1000-serverNow())/1000)); const m=Math.floor(left/60),s=left%60; el.textContent=`${m}:${String(s).padStart(2,"0")}`;el.classList.toggle("low",left<=15);
+    if(left<=0 && room.turnNo!==lastAutoPassTurn){ lastAutoPassTurn=room.turnNo; autoPass(room.turnUid,room.turnNo); }
+  }
+
+  function startTimers(){clearInterval(timerInterval);timerInterval=setInterval(updateTimer,500);}
+
+  function onRackTap(id){
+    if(exchangeMode){ if(!canAct())return; exchangeSelected.has(id)?exchangeSelected.delete(id):exchangeSelected.add(id); renderRack(); renderGame(); return; }
+    if(!canAct()){toast("Wait for your turn.");return;} selectedTileId=selectedTileId===id?null:id; renderRack(); $("moveHint").textContent=selectedTileId?"Now tap a board square":"Tap a tile, then a square";
+  }
+
+  function onCellTap(idx){
+    if(pending.has(idx)){ const t=pending.get(idx); pending.delete(idx); selectedTileId=t.id; renderGame(); return; }
+    if(!canAct()||!selectedTileId) return; if(boardTile(room.board||{},idx)){toast("That square is occupied.");return;}
+    const t=(myPlayer()?.rack||[]).find(x=>x.id===selectedTileId); if(!t)return;
+    if(t.blank){ blankPending={idx,tile:t}; $("blankDialog").showModal(); return; }
+    pending.set(idx,clone(t));selectedTileId=null;renderGame();
+  }
+
+  function initBlankLetters(){const el=$("blankLetters"); for(const L of "ABCDEFGHIJKLMNOPQRSTUVWXYZ"){const b=document.createElement("button");b.className="btn secondary smallbtn";b.textContent=L;b.addEventListener("click",()=>{if(blankPending){const t=clone(blankPending.tile);t.letter=L;pending.set(blankPending.idx,t);selectedTileId=null;blankPending=null;$("blankDialog").close();renderGame();}});el.appendChild(b);} $("blankCancel").addEventListener("click",()=>{blankPending=null;$("blankDialog").close();});}
+  initBlankLetters();
+
+  async function submitMove(){
+    if(!canAct()||!pending.size)return; const preview=calculateMove(room.board||{},pending); if(!preview.ok){toast(preview.error);return;}
+    const pmap=new Map([...pending.entries()].map(([i,t])=>[Number(i),clone(t)])); const turnNo=room.turnNo, uid=me.uid;
+    try{
+      const result=await runTransaction(ref(db,`rooms/${roomCode}`),r=>{
+        if(!r||r.status!=="playing"||r.turnUid!==uid||r.turnNo!==turnNo||r.challenge||r.pendingGameEnd)return;
+        const rack=r.players?.[uid]?.rack||[]; const ids=new Set(rack.map(t=>t.id)); for(const t of pmap.values()) if(!ids.has(t.id)) return;
+        const calc=calculateMove(r.board||{},pmap); if(!calc.ok)return;
+        const oldRack=clone(rack), oldBag=clone(r.bag||[]), oldScore=r.players[uid].score||0, oldScoreless=r.scorelessTurns||0;
+        r.board=r.board||{}; for(const [idx,t] of pmap){r.board[idx]={...clone(t),owner:uid};}
+        const playedIds=new Set([...pmap.values()].map(t=>t.id)); r.players[uid].rack=rack.filter(t=>!playedIds.has(t.id)); const drawn=drawTiles(r.bag,r.maxRack-r.players[uid].rack.length); r.players[uid].rack.push(...drawn);
+        r.players[uid].score=oldScore+calc.score; r.scorelessTurns=calc.score>0?0:oldScoreless+1;
+        const moveId=`m_${serverNow()}_${Math.random().toString(36).slice(2,7)}`; const n=nextPlayer(r,uid);
+        r.lastMove={id:moveId,playerUid:uid,playerName:r.players[uid].name,placed:[...pmap.entries()].map(([idx,t])=>({idx,tile:clone(t)})),words:calc.words.map(w=>w.text),score:calc.score,bingo:calc.bingo,challengeOpen:true,preRack:oldRack,preBag:oldBag,preScore:oldScore,preScorelessTurns:oldScoreless};
+        r.history=r.history||[]; r.history.push({kind:"play",moveId,name:r.players[uid].name,playerUid:uid,words:calc.words.map(w=>w.text),score:calc.score,bingo:calc.bingo,at:serverNow()});
+        r.turnIndex=n.index;r.turnUid=n.uid;r.turnNo=(r.turnNo||0)+1;r.turnStartedAt=serverNow();
+        if((r.bag||[]).length===0 && (r.players[uid].rack||[]).length===0) r.pendingGameEnd=true;
+        return r;
+      });
+      if(!result.committed){toast("Move could not be submitted. The room changed—try again.");return;} pending.clear();selectedTileId=null;exchangeMode=false;exchangeSelected.clear();toast(`Played ${preview.words.map(w=>w.text).join(", ")} for ${preview.score}.`);
+    }catch(e){console.error(e);toast("Could not submit move.");}
+  }
+
+  async function passTurn(auto=false){
+    if(!room||room.status!=="playing")return; const uid=auto?room.turnUid:me.uid; if(!auto&&!canAct())return; const turnNo=room.turnNo;
+    await runTransaction(ref(db,`rooms/${roomCode}`),r=>{
+      if(!r||r.status!=="playing"||r.turnUid!==uid||r.turnNo!==turnNo||r.challenge||r.pendingGameEnd)return;
+      if(auto && r.timerSeconds && serverNow()<r.turnStartedAt+r.timerSeconds*1000-500)return;
+      if(r.lastMove)r.lastMove.challengeOpen=false; const n=nextPlayer(r,uid); r.history=r.history||[];r.history.push({kind:"pass",name:r.players[uid].name,playerUid:uid,at:serverNow(),auto});r.scorelessTurns=(r.scorelessTurns||0)+1;r.turnIndex=n.index;r.turnUid=n.uid;r.turnNo=(r.turnNo||0)+1;r.turnStartedAt=serverNow(); if(r.scorelessTurns>=6) finishGame(r,null,"Six consecutive scoreless turns"); return r;
+    });
+    if(!auto){pending.clear();selectedTileId=null;exchangeMode=false;exchangeSelected.clear();}
+  }
+  async function autoPass(uid,turnNo){ if(!db)return; try{await passTurn(true);}catch(e){console.error(e);} }
+
+  async function doExchange(){
+    if(!canAct())return; if((room.bag||[]).length<7){toast("You can exchange only while at least 7 tiles remain in the bag.");return;}
+    if(!exchangeMode){pending.clear();selectedTileId=null;exchangeMode=true;exchangeSelected.clear();renderGame();toast("Tap the rack tiles you want to exchange.");return;}
+    if(!exchangeSelected.size){exchangeMode=false;renderGame();return;}
+    const ids=[...exchangeSelected],uid=me.uid,turnNo=room.turnNo;
+    const res=await runTransaction(ref(db,`rooms/${roomCode}`),r=>{
+      if(!r||r.status!=="playing"||r.turnUid!==uid||r.turnNo!==turnNo||r.challenge||r.pendingGameEnd||(r.bag||[]).length<7)return;
+      const rack=r.players[uid].rack||[], setIds=new Set(ids); const give=rack.filter(t=>setIds.has(t.id)); if(give.length!==ids.length)return;
+      if(r.lastMove)r.lastMove.challengeOpen=false; r.players[uid].rack=rack.filter(t=>!setIds.has(t.id)); const got=drawTiles(r.bag,give.length); r.players[uid].rack.push(...got); r.bag.push(...give); for(let i=r.bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r.bag[i],r.bag[j]]=[r.bag[j],r.bag[i]];}
+      r.history=r.history||[];r.history.push({kind:"exchange",name:r.players[uid].name,playerUid:uid,count:give.length,at:serverNow()});r.scorelessTurns=(r.scorelessTurns||0)+1;const n=nextPlayer(r,uid);r.turnIndex=n.index;r.turnUid=n.uid;r.turnNo=(r.turnNo||0)+1;r.turnStartedAt=serverNow();if(r.scorelessTurns>=6)finishGame(r,null,"Six consecutive scoreless turns");return r;
+    });
+    if(res.committed){exchangeMode=false;exchangeSelected.clear();toast("Tiles exchanged.");}
+  }
+
+  async function issueChallenge(){
+    if(!room?.lastMove?.challengeOpen||room.lastMove.playerUid===me.uid||room.challenge||room.status!=="playing")return; const moveId=room.lastMove.id,uid=me.uid;
+    const res=await runTransaction(ref(db,`rooms/${roomCode}`),r=>{if(!r||r.status!=="playing"||!r.lastMove?.challengeOpen||r.lastMove.id!==moveId||r.lastMove.playerUid===uid||r.challenge)return; r.challenge={moveId,challengerUid:uid,words:clone(r.lastMove.words||[]),startedAt:serverNow()};return r;});
+    if(res.committed) openChallengeDialog(moveId);
+  }
+
+  function openChallengeDialog(moveId){
+    if(!room?.challenge||room.challenge.moveId!==moveId)return; challengeDialogMoveId=moveId; $("challengeWords").textContent=(room.challenge.words||[]).join(" · "); $("validBtn").disabled=room.challenge.challengerUid!==me.uid; $("invalidBtn").disabled=room.challenge.challengerUid!==me.uid; if(!$("challengeDialog").open)$("challengeDialog").showModal();
+  }
+
+  async function resolveChallenge(valid){
+    const moveId=challengeDialogMoveId,uid=me.uid; if(!moveId)return;
+    const res=await runTransaction(ref(db,`rooms/${roomCode}`),r=>{
+      if(!r||!r.challenge||r.challenge.moveId!==moveId||r.challenge.challengerUid!==uid||r.lastMove?.id!==moveId)return;
+      const lm=r.lastMove, mover=lm.playerUid; r.history=r.history||[];
+      if(valid){
+        const penalty=5*(r.challenge.words||[]).length; r.players[mover].score=(r.players[mover].score||0)+penalty; r.history.push({kind:"challenge",name:r.players[uid].name,playerUid:uid,result:`unsuccessful (+${penalty} to ${r.players[mover].name})`,at:serverNow()}); lm.challengeOpen=false; r.challenge=null; r.turnStartedAt=serverNow(); if(r.pendingGameEnd) finishGame(r,mover,"A player used all tiles with an empty bag");
+      } else {
+        for(const x of lm.placed||[]) if(r.board) delete r.board[x.idx]; r.players[mover].rack=clone(lm.preRack||[]); r.bag=clone(lm.preBag||[]); r.players[mover].score=lm.preScore||0; r.scorelessTurns=(lm.preScorelessTurns||0)+1; r.pendingGameEnd=false;
+        const item=(r.history||[]).find(x=>x.moveId===moveId); if(item){item.invalid=true;item.score=0;} r.history.push({kind:"challenge",name:r.players[uid].name,playerUid:uid,result:"successful; play removed",at:serverNow()}); lm.challengeOpen=false;r.challenge=null;r.turnStartedAt=serverNow(); if(r.scorelessTurns>=6)finishGame(r,null,"Six consecutive scoreless turns");
+      }
+      return r;
+    });
+    if(res.committed){$("challengeDialog").close();challengeDialogMoveId=null;toast(valid?"Challenge unsuccessful.":"Invalid play removed.");}
+  }
+
+  async function acceptEndingMove(){
+    if(!room?.pendingGameEnd||room.lastMove?.playerUid===me.uid)return; const moveId=room.lastMove.id,uid=me.uid;
+    await runTransaction(ref(db,`rooms/${roomCode}`),r=>{if(!r||!r.pendingGameEnd||r.challenge||r.lastMove?.id!==moveId||r.lastMove.playerUid===uid)return; r.lastMove.challengeOpen=false; finishGame(r,r.lastMove.playerUid,"A player used all tiles with an empty bag"); return r;});
+  }
+
+  function shuffleRack(){rackOrder.sort(()=>Math.random()-.5);renderRack();}
+  function recall(){pending.clear();selectedTileId=null;renderGame();}
+
+  async function createRoom(){
+    if(!requireFirebase())return; const name=cleanName($("createName").value); if(!name){toast("Enter a nickname.");return;} saveName(name); const maxPlayers=Number($("playerCount").value),timerSeconds=Number($("timerSelect").value);
+    for(let tries=0;tries<6;tries++){
+      const code=randomCode(); const rref=ref(db,`rooms/${code}`); const init={createdAt:serverNow(),hostUid:me.uid,maxPlayers,timerSeconds,maxRack:7,status:"lobby",players:{[me.uid]:{name,score:0,rack:[],joinedAt:serverNow()}},order:[me.uid],history:[]};
+      const res=await runTransaction(rref,current=>current===null?init:undefined); if(res.committed){joinRoomStream(code);history.replaceState({},"",`${location.pathname}?room=${code}`);return;}
+    } toast("Could not create a room code. Try again.");
+  }
+
+  async function joinRoom(){
+    if(!requireFirebase())return;
+    const name=cleanName($("joinName").value),code=cleanCode($("roomInput").value);
+    if(!name){toast("Enter a nickname.");return;}
+    if(code.length!==6){toast("Enter the 6-character room code.");return;}
+    saveName(name);
+    try{
+      // Read first. A Realtime Database transaction can initially receive null on a
+      // device that has never cached this room; the old code treated that as
+      // "room not found" and aborted before Firebase could supply server data.
+      const snap=await get(ref(db,`rooms/${code}`));
+      if(!snap.exists()){toast("Room not found.");return;}
+      const r=snap.val();
+      if(r.status!=="lobby"){toast("This game has already started.");return;}
+      const players=r.players||{}, order=Array.isArray(r.order)?r.order:[];
+      if(!players[me.uid] && Object.keys(players).length>=Number(r.maxPlayers||0)){
+        toast("This room is full.");return;
+      }
+      const nextOrder=order.includes(me.uid)?order:[...order,me.uid];
+      const player=players[me.uid]||{score:0,rack:[],joinedAt:serverNow()};
+      player.name=name;
+      await update(ref(db,`rooms/${code}`),{
+        [`players/${me.uid}`]:player,
+        order:nextOrder
+      });
+      joinRoomStream(code);
+      history.replaceState({},"",`${location.pathname}?room=${code}`);
+    }catch(err){
+      console.error("Join room failed",err);
+      toast("Could not join room. Please try again.");
+    }
+  }
+
+  async function startGame(){
+    if(room?.hostUid!==me.uid)return; const code=roomCode;
+    const res=await runTransaction(ref(db,`rooms/${code}`),r=>{
+      if(!r||r.status!=="lobby"||r.hostUid!==me.uid||Object.keys(r.players||{}).length!==r.maxPlayers)return; const bag=makeBag(); r.bag=bag; r.board={}; r.scorelessTurns=0; r.turnIndex=0;r.turnUid=r.order[0];r.turnNo=1;r.turnStartedAt=serverNow();r.status="playing";r.startedAt=serverNow();r.maxRack=7;
+      for(const uid of r.order){r.players[uid].score=0;r.players[uid].rack=drawTiles(r.bag,7);} return r;
+    }); if(!res.committed)toast("Could not start yet.");
+  }
+
+  async function leaveLobby(){
+    if(!room||room.status!=="lobby")return goHome(); const uid=me.uid,code=roomCode;
+    await runTransaction(ref(db,`rooms/${code}`),r=>{if(!r||r.status!=="lobby"||!r.players?.[uid])return r; delete r.players[uid];r.order=(r.order||[]).filter(x=>x!==uid); if(!r.order.length)return null; if(r.hostUid===uid)r.hostUid=r.order[0];return r;}); goHome();
+  }
+
+  function joinRoomStream(code){
+    if(roomUnsub)roomUnsub(); roomCode=code; roomUnsub=onValue(ref(db,`rooms/${code}`),snap=>{
+      room=snap.val(); if(!room){toast("Room no longer exists.");goHome();return;} if(!room.players?.[me.uid]){show("homeScreen");return;}
+      if(room.status==="lobby"){show("lobbyScreen");renderLobby();}
+      else {show("gameScreen");renderGame(); if(room.challenge)openChallengeDialog(room.challenge.moveId); if(room.status==="ended")renderEnd();}
+    });
+  }
+
+
+  async function rematchGame(){
+    if(!room||room.status!=="ended"||room.hostUid!==me.uid)return;
+    const res=await runTransaction(ref(db,`rooms/${roomCode}`),r=>{
+      if(!r||r.status!=="ended"||r.hostUid!==me.uid)return; const bag=makeBag(); r.bag=bag;r.board={};r.history=[];r.lastMove=null;r.challenge=null;r.pendingGameEnd=false;r.winners=[];r.endReason=null;r.scorelessTurns=0;r.turnIndex=0;r.turnUid=r.order[0];r.turnNo=(r.turnNo||0)+1;r.turnStartedAt=serverNow();r.status="playing";r.startedAt=serverNow();
+      for(const uid of r.order){r.players[uid].score=0;r.players[uid].rack=drawTiles(r.bag,7);} return r;
+    });
+    if(res.committed){if($("endDialog").open)$("endDialog").close();pending.clear();selectedTileId=null;exchangeMode=false;exchangeSelected.clear();toast("Rematch started.");}
+  }
+
+  function goHome(){if(roomUnsub){roomUnsub();roomUnsub=null;}room=null;roomCode=null;pending.clear();selectedTileId=null;exchangeMode=false;exchangeSelected.clear();history.replaceState({},"",location.pathname);show("homeScreen");}
+  function randomCode(){const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";crypto.getRandomValues(new Uint32Array(6)).forEach(n=>s+=chars[n%chars.length]);return s;}
+  function saveName(n){localStorage.setItem("wordrack_name",n);$("createName").value=n;$("joinName").value=n;}
+  function requireFirebase(){if(!sdkConfigured){toast("Paste your Firebase configuration first.");return false;}if(!me){toast("Still connecting to Firebase.");return false;}return true;}
+  function roomLink(){return `${location.origin}${location.pathname}?room=${roomCode}`;}
+  async function shareRoom(){const data={title:"Join my WordRack game",text:`Join my room ${roomCode}`,url:roomLink()};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(roomLink());toast("Invite link copied.");}}catch(e){if(e.name!=="AbortError")toast("Could not share link.");}}
+
+  // UI events
+  $("createBtn").addEventListener("click",createRoom); $("joinBtn").addEventListener("click",joinRoom); $("startBtn").addEventListener("click",startGame); $("leaveBtn").addEventListener("click",leaveLobby); $("shareBtn").addEventListener("click",shareRoom);
+  $("submitBtn").addEventListener("click",submitMove); $("recallBtn").addEventListener("click",recall); $("shuffleBtn").addEventListener("click",shuffleRack); $("passBtn").addEventListener("click",()=>passTurn(false)); $("exchangeBtn").addEventListener("click",doExchange); $("challengeBtn").addEventListener("click",issueChallenge);
+  $("rulesBtn").addEventListener("click",()=>$("rulesDialog").showModal()); $("openCheckerBtn").addEventListener("click",()=>window.open(COLLINS_CHECKER,"_blank","noopener")); $("challengeCheckerBtn").addEventListener("click",()=>window.open(COLLINS_CHECKER,"_blank","noopener"));
+  $("validBtn").addEventListener("click",()=>resolveChallenge(true)); $("invalidBtn").addEventListener("click",()=>resolveChallenge(false));
+  $("copyWordsBtn").addEventListener("click",async()=>{try{await navigator.clipboard.writeText((room?.challenge?.words||[]).join("\n"));toast("Words copied.");}catch{toast("Copy failed.");}});
+  $("copyCodeBtn").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(roomLink());toast("Room link copied.");}catch{toast("Copy failed.");}});
+  $("rematchBtn").addEventListener("click",rematchGame); $("newRoomBtn").addEventListener("click",()=>{if($("endDialog").open)$("endDialog").close();goHome();}); $("endCloseBtn").addEventListener("click",()=>$("endDialog").close());
+  $("roomInput").addEventListener("input",e=>e.target.value=cleanCode(e.target.value));
+
+  const saved=localStorage.getItem("wordrack_name")||""; $("createName").value=saved;$("joinName").value=saved; const qp=cleanCode(new URLSearchParams(location.search).get("room")||""); if(qp)$("roomInput").value=qp;
+
+  if(sdkConfigured){
+    try{
+      app=initializeApp(firebaseConfig);auth=getAuth(app);db=getDatabase(app); offsetUnsub=onValue(ref(db,".info/serverTimeOffset"),s=>serverOffset=s.val()||0); onAuthStateChanged(auth,u=>{me=u;if(u){$("netPill").textContent="Online";$("netPill").style.color="#235d4e";}}); await signInAnonymously(auth); startTimers();
+    }catch(e){console.error(e);$("setupError").classList.add("show");$("setupError").innerHTML=`<strong>Firebase connection error:</strong> ${escapeHtml(e.message)}. Check your config, Anonymous Authentication, Realtime Database, and rules.`;$("netPill").textContent="Connection error";}
+  }
+</script>
+</body>
+</html>
